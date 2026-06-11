@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOXTSM: Analisis Komprehensif BBM & UU Polri 2026</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #040404;
+            color: #f3f4f6;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        /* Glassmorphism Matrix Frame */
+        .glass-master-box {
+            background: rgba(14, 14, 14, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+        }
+
+        .glass-node-inner {
+            background: rgba(22, 22, 22, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Interactive Elements Trigger */
+        .interactive-row-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .interactive-row-card:hover, .interactive-row-card:active {
+            transform: scale(1.002) translateX(6px);
+            background: rgba(239, 68, 68, 0.07) !important;
+            border-left-color: #ef4444 !important;
+        }
+
+        /* Full Screen Canvas for Rain & Lightning Overlay */
+        #ambient-weather-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Custom Table Design */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.825rem;
+        }
+        th, td {
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 0.9rem;
+            text-align: left;
+        }
+        th {
+            background: rgba(239, 68, 68, 0.12);
+            color: #ef4444;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.01);
+        }
+
+        /* Scrollbar Customized */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #040404; }
+        ::-webkit-scrollbar-thumb { background: #ef4444; border-radius: 10px; }
+
+        /* Navigation Controls active states */
+        .control-tab-btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        .control-tab-btn::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 3px;
+            background: #ef4444;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        .control-tab-btn.active {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444 !important;
+            font-weight: 800;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        .control-tab-btn.active::after { width: 85%; }
+
+        /* LIGHT MODE CONFIGURATIONS */
+        body.light-mode {
+            background-color: #f1f5f9;
+            color: #0f172a;
+        }
+        body.light-mode .glass-master-box {
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.06);
+        }
+        body.light-mode .glass-node-inner {
+            background: rgba(248, 250, 252, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+        }
+        body.light-mode th {
+            background: rgba(239, 68, 68, 0.08);
+            color: #b91c1c;
+            border-color: rgba(0,0,0,0.08);
+        }
+        body.light-mode td { border-color: rgba(0, 0, 0, 0.08); }
+        body.light-mode tr:nth-child(even) { background-color: rgba(0, 0, 0, 0.01); }
+        body.light-mode .text-zinc-400 { color: #475569; }
+        body.light-mode .text-zinc-300 { color: #1e293b; }
+        body.light-mode .text-gray-400 { color: #475569; }
+        body.light-mode .text-gray-500 { color: #64748b; }
+        body.light-mode .text-gray-600 { color: #334155; }
+        body.light-mode .text-blue-800 { color: #1d4ed8; }
+        body.light-mode .text-white { color: #0f172a; }
+        body.light-mode .bg-blue-50 { background-color: #eff6ff; border-color: #3b82f6; }
+        body.light-mode .bg-zinc-950\/80 { background-color: #e2e8f0; border-color: #cbd5e1; }
+        body.light-mode .bg-red-950\/20 { background-color: #fecdd3; border-color: #f43f5e; }
+        body.light-mode .bg-yellow-50 { background-color: #fef9c3; border-color: #eab308; }
+        body.light-mode .bg-blue-900 { background-color: #e2e8f0; border: 1px solid #cbd5e1; }
+        body.light-mode .bg-gray-50 { background-color: #f8fafc; border-color: #cbd5e1; }
+        
+        /* Flowchart Arrow Connectors */
+        .diagram-node-step { position: relative; }
+        .diagram-node-step:not(:last-child)::after {
+            content: '\f061';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            right: -16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #ef4444;
+            z-index: 10;
+        }
+        @media (max-width: 1024px) {
+            .diagram-node-step:not(:last-child)::after {
+                content: '\f063';
+                right: auto;
+                left: 50%;
+                bottom: -16px;
+                top: auto;
+                transform: translateX(-50%);
+            }
+        }
+    </style>
+</head>
+<body class="night-mode py-8 px-4 sm:px-6 lg:px-8">
+
+    <canvas id="ambient-weather-canvas"></canvas>
+
+    <header class="fixed top-0 left-0 right-0 z-50 border-b border-zinc-900 bg-black/85 backdrop-blur-md py-3.5 px-6 shadow-2xl">
+        <div class="max-w-5xl mx-auto flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 flex items-center justify-center filter drop-shadow-[0_0_8px_rgba(239,68,68,0.6)]">
+                    <svg viewBox="0 0 24 24" class="w-full h-full fill-none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 .587l3.668 7.431 8.2 1.192-5.934 5.784 1.4 8.168L12 18.896l-7.334 3.856 1.4-8.168L.132 9.21l8.2-1.192L12 .587z" class="fill-red-600"/>
+                        <path d="M12 .587V18.896l-7.334 3.856 1.4-8.168L.132 9.21l8.2-1.192L12 .587z" class="fill-black opacity-65"/>
+                    </svg>
+                </div>
+                <span class="text-xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-white to-zinc-400">VOXTSM</span>
+            </div>
+            
+            <button onclick="toggleWeatherDisplayTheme()" class="bg-zinc-900 border border-zinc-800 hover:bg-red-600 text-white hover:text-black text-[11px] px-3 py-1.5 rounded-full font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-lg">
+                <i id="theme-icon-indicator" class="fa-solid fa-sun"></i> <span id="theme-text-indicator">Light Mode</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="h-20"></div>
+
+    <div class="max-w-5xl mx-auto mt-6 mb-4">
+        <nav class="grid grid-cols-2 md:grid-cols-4 gap-2 bg-zinc-950/60 p-2 rounded-xl border border-zinc-900/60 backdrop-blur-md shadow-2xl">
+            <button onclick="switchVisualTab('tab-cover')" id="btn-tab-cover" class="control-tab-btn active py-3.5 rounded-lg text-xs font-bold text-zinc-400 hover:text-red-500 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-folder-open"></i> Sampul &amp; Makro
+            </button>
+            <button onclick="switchVisualTab('tab-bbm')" id="btn-tab-bbm" class="control-tab-btn py-3.5 rounded-lg text-xs font-bold text-zinc-400 hover:text-red-500 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-gas-pump"></i> Sektor Energi (BBM)
+            </button>
+            <button onclick="switchVisualTab('tab-polri')" id="btn-tab-polri" class="control-tab-btn py-3.5 rounded-lg text-xs font-bold text-zinc-400 hover:text-red-500 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-shield-halved"></i> Legislasi (UU Polri)
+            </button>
+            <button onclick="switchVisualTab('tab-manifesto')" id="btn-tab-manifesto" class="control-tab-btn py-3.5 rounded-lg text-xs font-bold text-zinc-400 hover:text-red-500 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-gavel"></i> Analisis &amp; Tuntutan
+            </button>
+        </nav>
+    </div>
+
+    <main class="max-w-5xl mx-auto p-6 sm:p-12 glass-master-box rounded-2xl relative z-10">
+        
+        <div id="visual-tab-cover" class="visual-tab-content block space-y-8">
+            <div class="text-center border-b border-red-900/30 pb-8">
+                <h3 class="text-xs font-black uppercase tracking-[0.3em] text-red-500 mb-1">Pergerakan Mahasiswa Islam Indonesia</h3>
+                <p class="text-[11px] text-gray-400 uppercase tracking-widest">Pengurus Cabang Kota Tasikmalaya | Cipayung Plus</p>
+                
+                <h1 class="text-2xl sm:text-4xl font-black mt-6 mb-3 text-white leading-tight uppercase tracking-tight">
+                    ANALISIS KOMPREHENSIF<br>
+                    <span class="text-lg sm:text-xl text-red-500 font-bold tracking-widest block mt-1">NARASI KONSOLIDASI &amp; ADVOKASI</span>
+                </h1>
+                <h2 class="text-base sm:text-lg font-medium text-zinc-300">Kenaikan Harga BBM &amp; Pengesahan UU Polri 2026</h2>
+                
+                <p class="italic text-xs text-gray-400 max-w-2xl mx-auto leading-relaxed mt-4">
+                    Dokumen ini disusun sebagai bahan advokasi akademis, konsolidasi gerakan, dan aksi damai yang menjunjung supremasi hukum, nilai keislaman, dan demokrasi substantif.
+                </p>
+            </div>
+
+            <div class="bg-red-950/10 border-l-4 border-red-600 p-4 rounded-r-lg">
+                <p class="text-xs text-zinc-300 m-0"><strong>Disusun berdasarkan data publik, sumber berita terverifikasi, dan argumentasi hukum akademis per 11-12 Juni 2026.</strong> Dokumen ini adalah instrumen advokasi intelektual untuk gerakan mahasiswa yang damai, kritis, dan bertanggung jawab.</p>
+            </div>
+
+            <div class="space-y-3">
+                <h3 class="text-xs font-bold text-red-400 tracking-wider uppercase flex items-center gap-2"><i class="fa-solid fa-chart-line"></i> 1.1 Kondisi Fiskal Ekonomi Aktual Nasional (Juni 2026)</h3>
+                <p class="text-xs text-gray-400">Dua kebijakan besar yang disahkan/diberlakukan dalam rentang 24 jam 9-10 Juni 2026 bukan muncul dalam ruang hampa. Keduanya lahir dari kondisi struktural Indonesia yang sedang dalam tekanan berlapis:</p>
+                <div class="overflow-x-auto rounded-xl border border-zinc-900">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Indikator Ekonomi</th>
+                                <th>Nilai / Kondisi Data Aktual</th>
+                                <th>Sumber Validasi Berita</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="interactive-text-row">
+                                <td class="font-medium text-zinc-300">Kurs Nilai Tukar USD/IDR (10 Juni 2026)</td>
+                                <td class="font-bold text-white">Rp17.881 / USD</td>
+                                <td>Bank Indonesia / Headline.co.id</td>
+                            </tr>
+                            <tr class="interactive-text-row">
+                                <td class="font-medium text-zinc-300">ICP (Harga Minyak Mentah Indonesia) Mei 2026</td>
+                                <td class="font-bold text-white">USD 106,56 / Barel</td>
+                                <td>Ditjen Migas (Rilis Resmi 8 Juni 2026)</td>
+                            </tr>
+                            <tr class="interactive-text-row">
+                                <td class="font-medium text-zinc-300">ICP Puncak Tertinggi Berjalan (April 2026)</td>
+                                <td class="font-bold text-white">USD 117,31 / Barel</td>
+                                <td>Ditjen Migas Kementerian ESDM</td>
+                            </tr>
+                            <tr class="interactive-text-row">
+                                <td class="font-medium text-zinc-300">Laju Inflasi Bulanan Mei 2026 (Month-on-Month)</td>
+                                <td class="font-bold text-white">0,28% (IHK Berada di Level 111,40)</td>
+                                <td>Badan Pusat Statistik (BPS) / Bisnis.com</td>
+                            </tr>
+                            <tr class="interactive-text-row">
+                                <td class="font-medium text-zinc-300">BI Rate (Pasca-Intervensi Kenaikan Darurat)</td>
+                                <td class="font-bold text-white">5,50%</td>
+                                <td>Rapat Dewan Gubernur Bank Indonesia</td>
+                            </tr>
+                            <tr class="interactive-text-row">
+                                <td class="font-medium text-zinc-300">Posisi Cadangan Devisa Mei 2026</td>
+                                <td class="font-bold text-red-500">Menyentuh Level Terendah sejak Juni 2024</td>
+                                <td>Trading Economics / Bank Indonesia</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-xs text-zinc-400 leading-relaxed bg-zinc-950/60 p-4 rounded-xl border border-zinc-900">
+                    <b>Akar Kontekstual Krisis Global:</b> Seaslinya sejak 28 Februari 2026, agresi militer bersenjata AS-Israel terhadap Iran memicu aksi pembalasan berupa penutupan sepihak Selat Hormuz oleh militer Iran sejak 5 Maret 2026. Selat strategis ini merupakan jalur nadi utama bagi sekitar 25% total arus perdagangan suplai minyak dunia. Dampaknya: harga minyak varian Brent melonjak tinggi menembus level di atas USD 108/barel, nilai rupiah terpuruk parah menyentuh Rp18.150/USD pada 9 Juni 2026 (titik terendah baru sejarah kontemporer), dan Bank Indonesia terpaksa menaikkan suku bunga acuan darurat sebesar 25 basis poin ke level 5,50% guna menahan arus keluar modal asing, melengkapi kenaikan agresif 50 basis poin di bulan Mei. Indonesia selaku <em>net oil importer</em> sejak tahun 2004 memikul kerentanan fiskal masif: setiap kenaikan USD 1/barel minyak mentah selama setahun berjalan otomatis menambah defisit anggaran APBN sebesar <b>Rp6,80 Triliun</b>.
+                </p>
+            </div>
+        </div>
+
+        <div id="visual-tab-bbm" class="visual-tab-content hidden space-y-6">
+            <h2 class="text-base font-black text-red-500 uppercase tracking-wider"><i class="fa-solid fa-gas-pump mr-2"></i> 2.0 Isu Sektor Energi: Kenaikan Harga BBM Pertamax Analisis Mendalam</h2>
+            
+            <div class="glass-node-inner p-5 space-y-4">
+                <h4 class="text-xs font-bold text-white uppercase tracking-wider">2.1 Bagan Perbandingan Kenaikan Harga Eceran Komersial (10 Juni 2026)</h4>
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <div class="flex justify-between text-zinc-400 mb-1"><span>Pertamax RON 92 <strong class="text-red-500 font-bold">+32%</strong></span><span>Rp12.300 &rarr; <b class="text-white">Rp16.250 / Liter</b></span></div>
+                        <div class="w-full bg-zinc-950 h-2 rounded-full overflow-hidden border border-zinc-900"><div class="bg-red-600 h-full" style="width: 65%"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-zinc-400 mb-1"><span>Pertamax Green 95 <strong class="text-red-500 font-bold">+32%</strong></span><span>Rp12.900 &rarr; <b class="text-white">Rp17.000 / Liter</b></span></div>
+                        <div class="w-full bg-zinc-950 h-2 rounded-full overflow-hidden border border-zinc-900"><div class="bg-red-600 h-full" style="width: 70%"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-zinc-400 mb-1"><span>Pertamax Turbo RON 98 <strong class="text-zinc-500 font-medium">Pasar Umum</strong></span><span>- &rarr; <b class="text-white">Rp20.750 / Liter</b></span></div>
+                        <div class="w-full bg-zinc-950 h-2 rounded-full overflow-hidden border border-zinc-900"><div class="bg-zinc-700 h-full" style="width: 85%"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-zinc-400 mb-1"><span>Dexlite (Diesel Umum) <strong class="text-zinc-500 font-medium">Pasar Umum</strong></span><span>- &rarr; <b class="text-white">Rp23.000 / Liter</b></span></div>
+                        <div class="w-full bg-zinc-950 h-2 rounded-full overflow-hidden border border-zinc-900"><div class="bg-zinc-700 h-full" style="width: 95%"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-zinc-400 mb-1"><span>Pertamina Dex <strong class="text-zinc-500 font-medium">Pasar Umum</strong></span><span>- &rarr; <b class="text-white">Rp24.800 / Liter</b></span></div>
+                        <div class="w-full bg-zinc-950 h-2 rounded-full overflow-hidden border border-zinc-900"><div class="bg-gradient-to-r from-red-900 to-red-600 h-full" style="width: 100%"></div></div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
+                        <div class="p-2.5 bg-zinc-950/80 rounded-lg border border-zinc-900 text-zinc-400">Pertalite RON 90 (Subsidi): <b class="text-emerald-400">Rp10.000 / Liter (Tetap)</b></div>
+                        <div class="p-2.5 bg-zinc-950/80 rounded-lg border border-zinc-900 text-zinc-400">Biosolar B35 (Subsidi): <b class="text-emerald-400">Rp6.800 / Liter (Tetap)</b></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-3 text-xs text-zinc-300">
+                <h4 class="font-bold text-zinc-200 uppercase tracking-wide"><i class="fa-solid fa-magnifying-glass-chart mr-1"></i> 2.2 Apa yang Tidak Diceritakan Pertamina ke Ruang Publik?</h4>
+                <div class="space-y-2">
+                    <p class="p-3 bg-zinc-950/40 rounded-xl border border-zinc-900">• <b>Bukan Kenaikan Perdana:</b> Produk JBU komersial lainnya seperti Dexlite dan Pertamina Dex telah mengalami penyesuaian berkala agresif sejak April 2026. Pertamax RON 92 merupakan varian terakhir yang didekatkan ke harga keekonomian riil karena Pertamina berupaya menahan margin negatifnya lebih lama.</p>
+                    <p class="p-3 bg-zinc-950/40 rounded-xl border border-zinc-900">• <b>Disparitas Ekstrem Memicu Migrasi Gagal Sasaran:</b> Celah selisih (gap) antara Pertamax komersial dengan Pertalite bersubsidi melebar drastis dari Rp2.300/liter menjadi <b>Rp6.250/liter</b>. Angka ini merupakan rekor ketimpangan harga tertinggi dalam sejarah energi kontemporer, memberikan insentif ekonomi yang kuat bagi kalangan kelas menengah untuk turun kelas mengonsumsi BBM subsidi yang berisiko menjebol kuota alokasi APBN.</p>
+                    <p class="p-3 bg-zinc-950/40 rounded-xl border border-zinc-900">• <b>Nihilnya Skema Kompensasi Sosial:</b> Kontras dengan kenaikan serentak tahun 2022 yang diiringi paket penebalan jaring pengaman sosial BLT (Bantuan Langsung Tunai) dan BSU, penyesuaian harga 10 Juni ini meluncur hampa tanpa ada kompensasi fiskal terstruktur bagi kelas menengah pekerja.</p>
+                    <p class="p-3 bg-zinc-950/40 rounded-xl border border-zinc-900">• <b>Paradoks Timing Penyesuaian:</b> Data internal mencatat nilai ICP siber Mei 2026 sebenarnya telah turun ke level USD 106,56/barel dari puncaknya USD 117,31/barel di bulan April. Muncul tanda tanya akademis mengapa besaran lonjakan tarif 32% baru dieksekusi di bulan Juni di saat tensi harga hulu global mulai melandai?</p>
+                </div>
+            </div>
+
+            <div class="space-y-3 text-xs">
+                <h4 class="font-bold text-zinc-200 uppercase tracking-wide"><i class="fa-solid fa-city mr-1"></i> 2.3 Dampak Nyata Berlapis di Rantai Transaksi Kota Tasikmalaya</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-zinc-400">
+                    <div class="p-3 bg-zinc-950/40 rounded-xl border-l-2 border-red-500">
+                        <strong class="text-white block mb-0.5">A. Sektor UMKM &amp; Sentra Kerajinan</strong>
+                        Kota Tasikmalaya merupakan salah satu motor niaga dan industri kreatif terbesar di Priangan Timur. Distribusi produk kerajinan bordir, alas kaki, anyaman bambu, dan pasokan kuliner malam sangat terikat pada moda logistik darat. Peningkatan biaya bensin memotong sisa laba bersih pelaku usaha mikro.
+                    </div>
+                    <div class="p-3 bg-zinc-950/40 rounded-xl border-l-2 border-red-500">
+                        <strong class="text-white block mb-0.5">B. Transportasi Umum &amp; Ojek Online</strong>
+                        Pengemudi angkot lokal dan driver ojol dihadapkan pada pilihan sulit: menaikkan tarif sepihak (yang memicu penurunan jumlah pelanggan akibat kompresi daya saing belanja kota) atau menanggung beban rugi operasional sendiri. Dengan trayek harian 200-300 KM, kenaikan ini menambah beban pengeluaran sebesar Rp240.000 - Rp360.000 per bulan per individu driver.
+                    </div>
+                    <div class="p-3 bg-zinc-950/40 rounded-xl border-l-2 border-red-500">
+                        <strong class="text-white block mb-0.5">C. Sektor Pertanian &amp; Tani Selatan</strong>
+                        Zona produksi pertanian di wilayah selatan Kabupaten Tasikmalaya (Kecamatan Cipatujah, Karangnunggal) terpaut jarak 60-80 KM dari pusat Pasar Induk Cikurubuk kota. Melambungnya tarif angkutan hasil bumi menekan sisa pendapatan petani lokal di tingkat hulu tengkulak.
+                    </div>
+                    <div class="p-3 bg-zinc-950/40 rounded-xl border-l-2 border-red-500">
+                        <strong class="text-white block mb-0.5">D. Efek Inflasi Berantai Berseri</strong>
+                        Armada angkutan logistik retail barang primer yang melayani rute distribusi antar-provinsi mengonsumsi varian bahan bakar nonsubsidi demi memelihara ketahanan mesin penjelajah. Kenaikan biaya logistik secara otomatis ditransmisikan langsung ke harga eceran barang kebutuhan pokok konsumen akhir.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="visual-tab-polri" class="visual-tab-content hidden space-y-6">
+            <h2 class="text-base font-black text-red-500 uppercase tracking-wider"><i class="fa-solid fa-shield-halved mr-2"></i> 3.0 Isu Tata Kelola Keamanan: Pengesahan UU Polri 2026 Analisis Mendalam</h2>
+            
+            <p class="text-xs text-zinc-300">
+                Disahkan secara kilat dalam momentum Paripurna DPR RI, undang-undang ini menuai sorotan tajam dari kelompok akademisi hukum dan koalisi sipil nasional karena dinilai memperluas dominasi aparat keamanan tanpa penguatan instrumen akuntabilitas pengawasan.
+            </p>
+
+            <div class="space-y-2">
+                <h4 class="text-xs font-bold text-zinc-200 uppercase tracking-wide"><i class="fa-solid fa-timeline mr-1"></i> 3.1 Garis Waktu Pengesahan Kilat RUU Polri (Mei - Juni 2026)</h4>
+                <div class="overflow-x-auto rounded-xl border border-zinc-900">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tanggal Regulasi</th>
+                                <th>Langkah Tahapan Legislasi DPR</th>
+                                <th>Keterangan Aspek Partisipasi Publik</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="table-row-bg">
+                                <td class="font-semibold text-white p-3">20 Mei 2026</td>
+                                <td>Badan Legislasi DPR RI menetapkan RUU Polri resmi sebagai usul inisiatif lembaga DPR.</td>
+                                <td class="text-zinc-400">Dikebut tanpa melalui kajian naskah akademik terbuka.</td>
+                            </tr>
+                            <tr class="table-row-bg">
+                                <td class="font-semibold text-white p-3">4 Juni 2026</td>
+                                <td>Pemerintah pusat resmi menyerahkan Daftar Inventarisasi Masalah (DIM) kepada pimpinan DPR.</td>
+                                <td class="text-zinc-400">Isi draf DIM tertutup dari peninjauan koalisi masyarakat sipil.</td>
+                            </tr>
+                            <tr class="table-row-bg bg-red-950/10">
+                                <td class="font-bold text-red-400 p-3">4 – 9 Juni 2026</td>
+                                <td class="font-bold text-red-400">Pembahasan Intensif Substansi Pasal &rarr; Hanya Berlangsung 5 Hari Kerja!</td>
+                                <td class="text-zinc-300 font-medium">Proses pembahasan tercepat sepanjang sejarah legislasi kontemporer.</td>
+                            </tr>
+                            <tr class="table-row-bg">
+                                <td class="font-semibold text-white p-3">9 Juni 2026 (Pagi)</td>
+                                <td>Rapat tingkat I di internal Komisi III DPR RI menyatakan draf disetujui secara aklamasi bulat.</td>
+                                <td class="text-zinc-400">Seluruh fraksi sepakat menolak intervensi draf tandingan sipil.</td>
+                            </tr>
+                            <tr class="table-row-bg">
+                                <td class="font-semibold text-white p-3">9 Juni 2026 (Siang)</td>
+                                <td>Rapat Paripurna DPR RI Ke-21 resmi mengetok pengesahan UU Polri menjadi produk hukum formal nasional.</td>
+                                <td class="text-zinc-400">Ketukan palu sidang mengabaikan gelombang protes koalisi RFP.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <h4 class="text-xs font-bold text-zinc-200 uppercase tracking-wide"><i class="fa-solid fa-list-ol mr-1"></i> 3.2 Analisis Bedah Delapan Pasal Krusial &amp; Potensi Bahaya</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div class="p-4 bg-zinc-950/40 border border-zinc-900 rounded-xl space-y-1">
+                        <b class="text-white block">1. Perpanjangan Batas Usia Pensiun</b>
+                        <p class="text-zinc-400">Usia pensiun bintara/perwira dinaikkan ke level 60 tahun (dan opsi 62 tahun bagi rumpun keahlian khusus). Jabatan Kapolri bintang empat dapat diperpanjang sepihak atas diskresi penuh hak prerogatif presiden.</p>
+                        <p class="text-red-400 italic">Kritik: Memperlambat jalur regenerasi meritokrasi internal kepemimpinan serta berpotensi menyuburkan loyalitas politik personal kepada lingkaran eksekutif.</p>
+                    </div>
+                    <div class="p-4 bg-zinc-950/40 border border-zinc-900 rounded-xl space-y-1">
+                        <b class="text-white block">2. Infiltrasi Anggota di Jabatan Sipil (Dwifungsi)</b>
+                        <p class="text-zinc-400">Perwira Polri aktif diberikan legalitas hukum untuk menduduki jabatan struktural kementerian/lembaga sipil nasional sepanjang berkorelasi dengan fungsi keamanan tanpa harus mengundurkan diri.</p>
+                        <p class="text-red-400 italic">Kritik: Kebangkitan roh doktrin dwifungsi yang menabrak kesepakatan TAP MPR VI/2000 dan VII/2000 era Reformasi 1998 pengunci pembatasan militer-polisi dari ranah sipil.</p>
+                    </div>
+                    <div class="p-4 bg-zinc-950/40 border border-zinc-900 rounded-xl space-y-1">
+                        <b class="text-white block">3. Perluasan Otoritas Siber Karet (Pasal 16)</b>
+                        <p class="text-zinc-400">Polri memegang kewenangan penuh melakukan penyadapan, pencegatan konten, pemblokiran interkoneksi, hingga perlambatan (throttling) akses siber digital atas dasar dalih payung "keamanan dalam negeri".</p>
+                        <p class="text-red-400 italic">Kritik: Cacat hukum berat karena Indonesia nihil UU Penyadapan pengendali prosedur intervensi yudisial. Frasa karet rawan disalahgunakan memberangus akun kritik digital aktivis.</p>
+                    </div>
+                    <div class="p-4 bg-zinc-950/40 border border-zinc-900 rounded-xl space-y-1">
+                        <b class="text-white block">4. Supervisi Penyidikan Lembaga Lain (KPK)</b>
+                        <p class="text-zinc-400">Menempatkan Korps Bhayangkara memegang fungsi supervisi serta pembinaan teknis penyidikan terhadap seluruh lembaga penegak hukum independen lain, termasuk KPK.</p>
+                        <p class="text-red-400 italic">Kritik: <em class="text-zinc-300">Inversion of oversight</em> yang mencederai logika pemberantasan korupsi. Menempatkan KPK di bawah kontrol teknis institusi yang rentan mengalami konflik kepentingan.</p>
+                    </div>
+                    <div class="p-4 bg-zinc-950/40 border border-zinc-900 rounded-xl">
+                        <b class="text-white block mb-0.5">5. Kosmetik Penguatan Kompolnas</b>
+                        Fungsi pengawasan Kompolnas hanya diperluas secara normatif tanpa dibekali kewenangan eksekusi investigasi independen, menjadikannya macan kertas penasihat.
+                    </div>
+                    <div class="p-4 bg-zinc-950/40 border border-zinc-900 rounded-xl">
+                        <b class="text-white block mb-0.5">6. Inklusi Disabilitas Rekrutmen</b>
+                        Membuka ruang kuota rekrutmen penugasan bagi kelompok difabel pada kluster administrasi siber, bernilai progresif non-kontroversial.
+                    </div>
+                    <div class="p-4 bg-zinc-950/40 border border-zinc-900 rounded-xl">
+                        <b class="text-white block mb-0.5">7. Klausul Deklaratif Netralitas</b>
+                        Aturan mengunci netralitas dalam pesta pemilu, namun lemah dalam memuat instrumen penegakan sanksi pidana etik yang konkret di lapangan.
+                    </div>
+                    <div class="p-4 bg-zinc-950/40 border border-zinc-900 rounded-xl">
+                        <b class="text-white block mb-0.5">8. Transformasi Administrasi Modern</b>
+                        Penyusunan tata kelola digitalisasi data kriminal terpadu nasional, bernilai positif guna efisiensi birokrasi penegakan hukum.
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-zinc-950 rounded-xl border border-zinc-900 text-xs text-zinc-400">
+                <b>⚠️ Konsensus Penolakan Komunitas Sipil:</b> Koalisi nasional <em>Reform For Police (RFP)</em> yang dimotori oleh YLBHI, KontraS, ICJR, PSHK, LBH Jakarta, SAFEnet, ICW, AJI Indonesia, dan Amnesty International Indonesia secara berani menyatakan proses pengesahan ini sebagai tindakan ugal-ugalan hukum. Ketua YLBHI Muhammad Isnur menegaskan parlemen telah mengkhianati asas kedaulatan warga, sementara Usman Hamid mendokumentasikan pola diskriminatif draf: regulasi hajat hidup rakyat jelata (RUU PPRT, RUU Masyarakat Adat, RUU Perampasan Aset) ditunda belasan tahun, sedangkan perluasan dominasi koersif keamanan disahkan dalam hitungan hari.
+            </div>
+        </div>
+
+        <div id="visual-tab-manifesto" class="visual-tab-content hidden space-y-6">
+            <div class="space-y-3">
+                <h3 class="text-base font-extrabold text-red-500 tracking-wider uppercase"><i class="fa-solid fa-diagram-project mr-2"></i> 4.1 Bagan Alur Hubungan Sebab-Akibat Kebijakan Publik 2026</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 text-center text-xs pt-2">
+                    <div class="diagram-node-step p-4 glass-node-inner border border-zinc-900">
+                        <b class="text-red-400 block mb-1">1. Guncangan Global</b>
+                        Konflik Timur Tengah &rarr; Penutupan Selat Hormuz &rarr; ICP Meroket USD 108/barel &rarr; Rupiah Terkapar Rp17.881/USD.
+                    </div>
+                    <div class="diagram-node-step p-4 glass-node-inner border border-zinc-900">
+                        <b class="text-red-400 block mb-1">2. Tekanan Fiskal</b>
+                        Defisit Migas Nasional Menembus >1 Juta Barel/Hari &rarr; Anggaran Subsidi APBN Terkuras Kritis.
+                    </div>
+                    <div class="diagram-node-step p-4 glass-node-inner border border-zinc-900">
+                        <b class="text-red-400 block mb-1">3. Respon Penguasa</b>
+                        Eceran Pertamax Dinaikkan Komersial 32% &rarr; Pengesahan UU Polri Dikebut Kilat 5 Hari Kerja Guna Proteksi.
+                    </div>
+                    <div class="p-4 glass-node-inner border border-red-900/40 bg-red-950/10 text-zinc-300">
+                        <b class="text-white block mb-1">4. Implikasi Lapangan</b>
+                        Rambatan Efek Putaran Kedua (Second Round Effect) Menekan UMKM &amp; Pengemudi Ojol Kota Tasikmalaya.
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+                <div class="glass-node-inner p-4 space-y-2">
+                    <h4 class="font-bold text-red-400 uppercase"><i class="fa-solid fa-scale-unbalanced-flip"></i> 4.2 Landasan Hukum Gugatan Konstitusi (Judicial Review)</h4>
+                    <p class="text-zinc-300"><b>• Putusan MK No. 91/PUU-XVIII/2020:</b> Menetapkan kewajiban mutlak pemenuhan tiga komponen <em class="text-zinc-400">meaningful participation</em> (Hak didengar, hak dipertimbangkan, hak diberikan jawaban alasan penolakan). Pembahasan 5 hari kerja mutlak melanggar syarat ini, memberi legal standing formil JR.</p>
+                    <p class="text-zinc-300"><b>• UUD 1945 Pasal 28G &amp; TAP MPR:</b> Pembatasan ruang kebebasan siber digital melanggar hak perlindungan diri rakyat, serta penugasan aparat di kementerian sipil menabrak TAP MPR VII/2000.</p>
+                </div>
+                <div class="glass-node-inner p-4 space-y-2">
+                    <h4 class="font-bold text-zinc-300 uppercase"><i class="fa-solid fa-shield-cat"></i> 4.3 Analisis Pola Implikasi Sistemik Lintas Isu</h4>
+                    <p class="text-zinc-400"><b>• Top-Down Decision Making:</b> Kebijakan publik digulirkan terburu-buru tanpa disertai bantalan jaring sosial pengaman (BLT) bagi kelompok terdampak menengah.</p>
+                    <p class="text-zinc-400"><b>• Akumulasi Guncangan Ganda:</b> Warga dipaksa menghadapi kompresi daya saing ekonomi riil sekaligus penyempitan ruang demokrasi siber sipil secara simultan.</p>
+                </div>
+            </div>
+
+            <div class="glass-node-inner p-6 rounded-xl border border-red-900/40 bg-gradient-to-b from-red-950/10 to-black/80 shadow-2xl space-y-4">
+                <div class="text-center max-w-2xl mx-auto space-y-1">
+                    <span class="text-[10px] font-bold text-red-500 tracking-widest uppercase block">Konsolidasi Gerakan Cipayung Plus</span>
+                    <h3 class="text-base font-black text-white uppercase tracking-wider">MANDAT LIMA TUNTUTAN POKOK PERJUANGAN</h3>
+                </div>
+
+                <div class="space-y-3 text-xs leading-relaxed text-zinc-300">
+                    <div class="p-3 bg-zinc-950/80 border border-zinc-900 rounded-lg">
+                        <b class="text-red-400 block mb-0.5 uppercase">Tuntutan 1: Evaluasi Skema Keekonomian Kenaikan BBM</b>
+                        Mendesak Pemerintah RI dan PT Pertamina (Persero) menjabarkan secara terbuka kalkulasi formula MOPS pengunci lonjakan harga eceran 32%, serta mengkaji ulang proporsionalitas harga mengingat indeks ICP dunia Mei 2026 telah mengalami tren penurunan ke level USD 106,56 per barel.
+                    </div>
+                    <div class="p-3 bg-zinc-950/80 border border-zinc-900 rounded-lg">
+                        <b class="text-red-400 block mb-0.5 uppercase">Tuntutan 2: Pengguliran Paket Kompensasi Terstruktur</b>
+                        Menuntut pemerintah segera merilis paket perlindungan bantalan jaring sosial konkret terarah (berbasis integrasi NIK/DTKS) guna melindungi ketahanan ekonomi kelompok masyarakat kelas menengah-bawah, pengemudi transportasi informal harian, serta barisan pelaku UMKM daerah.
+                    </div>
+                    <div class="p-3 bg-zinc-950/80 border border-zinc-900 rounded-lg">
+                        <b class="text-red-400 block mb-0.5 uppercase">Tuntutan 3: Pembatalan &amp; Revisi Pasal Bermasalah UU Polri 2026</b>
+                        Menolak keras dan menuntut pembatalan pasal karet peluas otoritas siber pengekang ruang berekspresi tanpa kontrol yudisial, penolakan penugasan polisi aktif di jabatan sipil, serta penghapusan klausul supervisi kepolisian atas komisi antikorupsi KPK.
+                    </div>
+                    <div class="p-3 bg-zinc-950/80 border border-zinc-900 rounded-lg">
+                        <b class="text-red-400 block mb-0.5 uppercase">Tuntutan 4: Penegakan Standardisasi Partisipasi Bermakna</b>
+                        Mendesak DPR RI menyusun regulasi internal tata tertib legislasi yang mewajibkan batas waktu konsultasi publik inklusif terbuka minimal selama 3 bulan untuk setiap draf RUU strategis demi menegakkan amanat legal Putusan Mahkamah Konstitusi No. 91/PUU-XVIII/2020.
+                    </div>
+                    <div class="p-3 bg-zinc-950/80 border border-zinc-900 rounded-lg">
+                        <b class="text-red-400 block mb-0.5 uppercase">Tuntutan 5: Mendesak Sikap Resmi Otoritas DPRD &amp; Pemkot</b>
+                        Menuntut jajaran DPRD Kota Tasikmalaya melayangkan surat pernyataan sikap kelembagaan resmi menolak undang-undang cacat formil ke pimpinan pusat, serta mendesak Pemerintah Kota menyiapkan alokasi anggaran jaring perlindungan APBD khusus bagi kelangsungan UMKM Pasar Cikurubuk.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="relative z-20 max-w-5xl mx-auto text-center border-t border-zinc-900 pt-8 mt-12 space-y-5">
+        <p class="text-[10px] italic text-gray-500 max-w-3xl mx-auto leading-relaxed">
+            Dokumen ini disusun sebagai bahan advokasi akademis dan konsolidasi gerakan. Distribusi diperbolehkan dengan menyertakan atribusi. Tidak ada satu pun bagian dari dokumen ini yang mengandung ajakan untuk tindakan kekerasan, perusakan, atau pelanggaran hukum.
+        </p>
+        
+        <div class="py-4">
+            <h2 class="text-2xl font-black tracking-[0.2em] text-white uppercase">MINIMAL JIGAH AING</h2>
+            <p class="text-xs font-extrabold tracking-[0.4em] text-red-500 uppercase mt-2">REFUSE, RESIST, REBEL, REVOLT.</p>
+        </div>
+
+        
+    </footer>
+
+    <script>
+        // Tab Switcher Controller Engine
+        function switchVisualTab(tabId) {
+            document.querySelectorAll('.visual-tab-content').forEach(c => c.classList.add('hidden'));
+            document.querySelectorAll('.control-tab-btn').forEach(b => {
+                b.classList.remove('active');
+                b.classList.add('text-zinc-400');
+            });
+            
+            const selectedContent = document.getElementById('visual-' + tabId);
+            if(selectedContent) selectedContent.classList.remove('hidden');
+            
+            const selectedBtn = document.getElementById('btn-' + tabId);
+            if(selectedBtn) selectedBtn.classList.add('active');
+        }
+
+        // Night Mode vs Light Mode Engine
+        function toggleWeatherDisplayTheme() {
+            const body = document.body;
+            const icon = document.getElementById('theme-icon-indicator');
+            const text = document.getElementById('theme-text-indicator');
+
+            if (body.classList.contains('night-mode')) {
+                body.classList.remove('night-mode');
+                body.classList.add('light-mode');
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+                text.innerText = 'Night Mode';
+            } else {
+                body.classList.remove('light-mode');
+                body.classList.add('night-mode');
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+                text.innerText = 'Light Mode';
+            }
+        }
+
+        // AMBIENT WEATHER ENGINE (SIMULASI HUJAN DERAS, SAMBARAN PETIR OTOMATIS & SENTUHAN HP)
+        const canvas = document.getElementById('ambient-weather-canvas');
+        const ctx = canvas.getContext('2d');
+        let rainDropsArray = [];
+        let plasmaFlaresArray = [];
+        let lightningStrikeData = null;
+        let flashOpacity = 0;
+
+        function initCanvasSize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', initCanvasSize);
+        initCanvasSize();
+
+        // Struktur Tetesan Air Hujan Deras Linier
+        class RainDrop {
+            constructor() {
+                this.reset();
+                this.y = Math.random() * canvas.height; // Inisialisasi sebaran acak awal
+            }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = -20;
+                this.length = Math.random() * 25 + 15; // Garis hujan panjang linier
+                this.speedY = Math.random() * 18 + 22; // Kecepatan hujan deras jatuh
+                this.speedX = -2 - Math.random() * 2;   // Sedikit miring terkena angin barat
+                this.opacity = Math.random() * 0.18 + 0.07;
+            }
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX;
+                if (this.y > canvas.height || this.x < -20) {
+                    this.reset();
+                }
+            }
+            draw() {
+                ctx.strokeStyle = `rgba(239, 68, 68, ${this.opacity})`; // Hujan semburat merah tipis transparan
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x + this.speedX, this.y + this.length);
+                ctx.stroke();
+            }
+        }
+
+        // Struktur Emisi Cahaya Plasma Saat Disentuh (HP) / Mouse Digeser (Laptop)
+        class PlasmaFlare {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 4 + 1.5;
+                this.speedX = Math.random() * 3 - 1.5;
+                this.speedY = Math.random() * -1.5 - 0.5; // Melayang rileks ke atas
+                this.color = `rgba(239, 68, 68, ${Math.random() * 0.4 + 0.2})`;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.size > 0.1) this.size -= 0.03;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            }
+        }
+
+        // Struktur Algoritma Fraktal Jalur Petir Berkilat
+        class LightningStrike {
+            constructor(x) {
+                this.segments = [];
+                let currentX = x;
+                let currentY = 0;
+                let steps = 7;
+                let stepY = canvas.height / steps;
+
+                for (let i = 0; i < steps; i++) {
+                    let nextY = currentY + stepY;
+                    let nextX = currentX + (Math.random() * 80 - 40);
+                    if (i === steps - 1) { nextY = canvas.height; }
+                    this.segments.push({x1: currentX, y1: currentY, x2: nextX, y2: nextY});
+                    currentX = nextX;
+                    currentY = nextY;
+                }
+            }
+            draw() {
+                ctx.strokeStyle = "rgba(239, 68, 68, 0.9)";
+                ctx.lineWidth = Math.random() * 3 + 2;
+                ctx.shadowBlur = 25;
+                ctx.shadowColor = "#ef4444";
+                ctx.beginPath();
+                this.segments.forEach(seg => {
+                    ctx.moveTo(seg.x1, seg.y1);
+                    ctx.lineTo(seg.x2, seg.y2);
+                });
+                ctx.stroke();
+                ctx.shadowBlur = 0; // Reset
+            }
+        }
+
+        // Populasi Awal Air Hujan Deras (150 Butir Linier)
+        for (let i = 0; i < 150; i++) {
+            rainDropsArray.push(new RainDrop());
+        }
+
+        // Detektor Gerakan Interaksi Gestur
+        function handleWeatherInteraction(e) {
+            const posX = e.touches ? e.touches[0].clientX : e.clientX;
+            const posY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            for (let i = 0; i < 2; i++) {
+                plasmaFlaresArray.push(new PlasmaFlare(posX, posY));
+            }
+        }
+        window.addEventListener('mousemove', handleWeatherInteraction);
+        window.addEventListener('touchmove', handleWeatherInteraction, {passive: true});
+
+        // Loop Animasi Cuaca Berkelanjutan
+        function loopWeatherFrame() {
+            // Bersihkan frame sebelumnya
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Efek Flash Kilatan Petir Otomatis Mengubah Background Sesaat
+            if (Math.random() < 0.003 && flashOpacity <= 0) {
+                flashOpacity = 0.35; // Pemicu ledakan cahaya langit
+                lightningStrikeData = new LightningStrike(Math.random() * canvas.width);
+            }
+
+            if (flashOpacity > 0) {
+                ctx.fillStyle = `rgba(239, 68, 68, ${flashOpacity})`;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                flashOpacity -= 0.02;
+
+                if (lightningStrikeData) {
+                    lightningStrikeData.draw();
+                    if (flashOpacity <= 0) lightningStrikeData = null;
+                }
+            }
+
+            // Update & Render Air Hujan Deras
+            rainDropsArray.forEach(drop => {
+                drop.update();
+                drop.draw();
+            });
+
+            // Update & Render Sinar Klik Plasma
+            for (let i = 0; i < plasmaFlaresArray.length; i++) {
+                plasmaFlaresArray[i].update();
+                plasmaFlaresArray[i].draw();
+                if (plasmaFlaresArray[i].size <= 0.1) {
+                    plasmaFlaresArray.splice(i, 1);
+                    i--;
+                }
+            }
+
+            requestAnimationFrame(loopWeatherFrame);
+        }
+        loopWeatherFrame();
+    </script>
+</body>
+</html>
